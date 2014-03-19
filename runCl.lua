@@ -19,6 +19,7 @@ cmd:option('-weightDecay',0)
 cmd:option('-plot',true)
 cmd:option('-nOutputPlanes',32)
 cmd:option('-kernelSize',1)
+cmd:option('-learningRate',0.2)
 opt = cmd:parse(arg or {})
 
 if opt.type == 'cuda' then
@@ -27,10 +28,8 @@ if opt.type == 'cuda' then
 elseif opt.type == 'float' then
 	torch.setdefaulttensortype('torch.FloatTensor')
 end
-
-
-opt.save = opt.save .. '/LR_0.5/' .. 'model_' .. opt.model .. '/kernelSize_' .. opt.kernelSize .. '_nOutputPlanes_' .. opt.nOutputPlanes .. '/weightDecay_' .. opt.weightDecay .. '/'
-
+opt.save = opt.save .. 'model_' .. opt.model .. '/kernelSize_' .. opt.kernelSize .. '_nOutputPlanes_' .. opt.nOutputPlanes .. '/learningRate_' .. opt.learningRate .. '/weightDecay_' .. opt.weightDecay .. '/'
+print(opt)
 
 --------------------------------------------------
 -- LOAD DATASET
@@ -52,7 +51,6 @@ tedata = data.valid
 trlabels = labels.train
 telabels = labels.valid
 
-
 nBands = trdata:size(2)
 nFrames = trdata:size(4)
 
@@ -60,7 +58,6 @@ nFrames = trdata:size(4)
 ------------------------------------------------------------------
 -- MODEL
 ------------------------------------------------------------------
-
 
 nOutputs = 2
 
@@ -77,7 +74,6 @@ elseif opt.model == 2 then
 	nOutputPlanes = opt.nOutputPlanes
 	kernelSize = opt.kernelSize
 	paddedSize = 2000
-
 
 	model = nn.Sequential()
 	model:add(nn.SpatialZeroPadding(0,paddedSize-nFrames,0,0))
@@ -98,7 +94,7 @@ print(model)
 
 optimMethod = optim.sgd
 optimState = {
-	learningRate = 0.2,
+	learningRate = opt.learningRate,
 	weightDecay = opt.weightDecay,
 	learningRateDecay = 1e-7
 }
@@ -106,7 +102,6 @@ optimState = {
 opt.optimState = optimState
 opt.optimMethod = optimMethod
 opt.classes = {'1','2'}
-
 
 
 -------------------------------------------
